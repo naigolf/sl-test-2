@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เปรียบเทียบผลโหวต</title>
+  <style>
+   h1 span {
+      font-size: 0.5em;
+      color: gray;
+    }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .half {
+      flex: 1;
+      padding: 10px;
+      border-bottom: 2px solid #ccc;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background: #f4c542;
+    }
+    .button-container { /* เพิ่ม class สำหรับจัดกลุ่มปุ่ม */
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    
+     input, select, button {
+      padding: 8px;
+      margin: 5px 2px; /* ปรับ margin เล็กน้อย */
+      width: 100%;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <h1>เปรียบเทียบ  <span>    Cr. NaiGolf</span></h1>
+
+<div class="button-container">
+  <button onclick="location.href='https://naigolf.github.io/sl-test/'">🎈 Blind Test</button>
+</div>
+
+
+
+  <div class="half" id="top-half">
+    <select id="select1"></select>
+    <div id="table1"></div>
+  </div>
+  <div class="half" id="bottom-half">
+    <select id="select2"></select>
+    <div id="table2"></div>
+  </div>
+
+  <script>
+    const apiUrl = 'https://script.google.com/macros/s/AKfycbyVZiqoein34EW_zVNVwa9MNzrF0nGFTKBSZL6ec9RxstLDlKBGwQh5swLBmg10UB3v/exec'; // <-- ใส่ URL Apps Script
+
+    let allData = {};
+
+    async function fetchData() {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      allData = data;
+      const testNames = Object.keys(data);
+      populateDropdown('select1', testNames);
+      populateDropdown('select2', testNames);
+    }
+
+    function populateDropdown(id, options) {
+      const select = document.getElementById(id);
+      select.innerHTML = '<option disabled selected>เลือกหัวข้อ</option>';
+      options.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        select.appendChild(o);
+      });
+
+      select.addEventListener('change', () => {
+        renderTable(id === 'select1' ? 'table1' : 'table2', allData[select.value]);
+      });
+    }
+
+    function renderTable(containerId, data) {
+      const container = document.getElementById(containerId);
+      if (!data) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = `<table>
+        <tr>
+          <th colspan="5">${data.timestamp}</th>
+        </tr>
+        <tr>
+          <th colspan="5">${data.testName}</th>
+        </tr>
+        <tr>
+          <th>ชื่อคน</th>
+          <th>อันดับ 1</th>
+          <th>อันดับ 2</th>
+          <th>อันดับ 3</th>
+        </tr>`;
+
+      data.votes.forEach(vote => {
+        html += `
+          <tr>
+            <td>${vote.name}</td>
+            <td>${vote.rank1 || ''}</td>
+            <td>${vote.rank2 || ''}</td>
+            <td>${vote.rank3 || ''}</td>
+          </tr>`;
+      });
+
+      html += `</table>`;
+      container.innerHTML = html;
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
